@@ -21,6 +21,7 @@ from pathlib import Path
 TRAX_DIR = Path(os.environ.get("TRAX_DIR", Path.home() / "Trax"))
 STATE_FILE = TRAX_DIR / "STATE.md"
 PROJECTS_FILE = TRAX_DIR / "projects.json"
+SCHEDULE_FILE = TRAX_DIR / ".trax-schedule.json"
 
 URL = os.environ.get("GEORGEFM_URL", "").rstrip("/")
 TOKEN = os.environ.get("GEORGEFM_TOKEN", "")
@@ -189,12 +190,20 @@ def build_payload():
             "next_steps_preview": read_next_steps(p.get("dir", key)),
         }
 
+    schedule = None
+    if SCHEDULE_FILE.exists():
+        try:
+            schedule = json.loads(SCHEDULE_FILE.read_text())
+        except Exception:
+            schedule = None
+
     return {
         "now_playing": now_playing,
         "up_next": up_next,
         "recently_played": recent,
         "library": library,
         "tracks": tracks,
+        "schedule": schedule,
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }
 

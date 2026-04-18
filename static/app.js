@@ -1,4 +1,7 @@
 const REFRESH_MS = 30_000;
+const TICK_MS = 1_000;
+
+let currentSchedule = null;
 
 function fmtRelative(iso) {
   if (!iso) return '—';
@@ -40,9 +43,9 @@ function renderNowPlaying(np) {
     setText('np-title', 'silent');
     setText('np-artist', 'no track');
     setText('np-summary', 'queue empty — mac is idle');
-    setText('np-elapsed', '0:00');
     setText('np-status', '—');
     if (bar) bar.style.width = '0%';
+    paintSchedule();
     return;
   }
   setText('np-title', np.project || '—');
@@ -53,16 +56,47 @@ function renderNowPlaying(np) {
   setText('np-artist', np.channel ? `#${np.channel}` : '—');
   setText('np-summary', np.summary || '—');
 
-  const elapsed = np.duration_seconds || 0;
-  setText('np-elapsed', fmtDuration(elapsed));
-  const pct = Math.min(100, (elapsed / 600) * 100);
-  if (bar) bar.style.width = `${pct}%`;
-
   const pill = document.getElementById('np-status');
   if (pill) {
     pill.textContent = np.status || '—';
     pill.className = `status-pill ${np.status || ''}`;
   }
+
+  paintSchedule();
+}
+
+function fmtCountdown(sec) {
+  sec = Math.max(0, Math.floor(sec));
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  if (h) return `${h}h${String(m).padStart(2, '0')}m`;
+  if (m) return `${m}m${String(s).padStart(2, '0')}s`;
+  return `${s}s`;
+}
+
+function paintSchedule() {
+  const bar = document.getElementById('np-bar');
+  const sched = currentSchedule;
+  if (!sched || !sched.last_run_at || !sched.interval_seconds) {
+    setText('np-elapsed', '—');
+    if (bar) bar.style.width = '0%';
+    return;
+  }
+  const last = Date.parse(sched.last_run_at);
+  if (!Number.isFinite(last)) {
+    setText('np-elapsed', '—');
+    if (bar) bar.style.width = '0%';
+    return;
+  }
+  const intervalMs = sched.interval_seconds * 1000;
+  const elapsedMs = Date.now() - last;
+  const remainingSec = (intervalMs - elapsedMs) / 1000;
+  const pct = Math.max(0, Math.min(100, (elapsedMs / intervalMs) * 100));
+  if (bar) bar.style.width = `${pct}%`;
+  setText('np-elapsed', remainingSec > 0
+    ? `next in ${fmtCountdown(remainingSec)}`
+    : `overdue ${fmtCountdown(-remainingSec)}`);
 }
 
 function renderList(id, items, opts = {}) {
@@ -156,6 +190,7 @@ async function refreshStatus() {
   try {
     const res = await fetch('/api/status', { cache: 'no-store' });
     const data = await res.json();
+    currentSchedule = data.schedule || null;
     renderNowPlaying(data.now_playing);
     renderList('up-next', data.up_next);
     renderList('recent', data.recently_played, { showWhen: true });
@@ -192,3 +227,4 @@ async function refresh() {
 
 refresh();
 setInterval(refresh, REFRESH_MS);
+setInterval(paintSchedule, TICK_MS);
