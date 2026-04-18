@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>georgeFM — now playing</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo">georgeFM<span class="cursor">_</span></div>
+    <div class="meta">
+      <span class="dot live"></span>
+      <span id="updated">—</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="now-playing" id="np">
+      <div class="vinyl"><div class="hole"></div></div>
+      <div class="np-info">
+        <div class="np-label">now playing</div>
+        <div class="np-title" id="np-title">—</div>
+        <div class="np-artist" id="np-artist">—</div>
+        <div class="np-summary" id="np-summary">awaiting first publish from the mac</div>
+        <div class="progress"><div class="bar" id="np-bar"></div></div>
+        <div class="np-times"><span id="np-elapsed">0:00</span><span id="np-status" class="status-pill">—</span></div>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>up next</h2>
+      <ol class="tracklist" id="up-next"></ol>
+    </section>
+
+    <section class="block">
+      <h2>recently played</h2>
+      <ol class="tracklist" id="recent"></ol>
+    </section>
+
+    <section class="block">
+      <h2>library</h2>
+      <div class="library" id="library"></div>
+    </section>
+  </main>
+
+  <footer>
+    <span>auto-refresh 30s</span>
+    <span>·</span>
+    <a href="/api/status">/api/status</a>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
