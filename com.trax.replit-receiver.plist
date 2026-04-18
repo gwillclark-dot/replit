@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.trax.replit-receiver</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/bin/python3</string>
+        <string>/Users/g2/Trax/replit-status/receive.py</string>
+    </array>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>GEORGEFM_URL</key>
+        <string>https://trax-vis.replit.app</string>
+    </dict>
+    <key>StartInterval</key>
+    <integer>60</integer>
+    <key>WorkingDirectory</key>
+    <string>/Users/g2/Trax/replit-status</string>
+    <key>StandardOutPath</key>
+    <string>/Users/g2/Trax/session-log/replit-receiver-stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/g2/Trax/session-log/replit-receiver-stderr.log</string>
+    <key>RunAtLoad</key>
+    <true/>
+</dict>
+</plist>

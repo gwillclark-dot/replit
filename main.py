@@ -1,5 +1,7 @@
 import json
 import os
+import re
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -14,8 +16,12 @@ except ImportError:
 
 APP_DIR = Path(__file__).parent
 DATA_FILE = APP_DIR / "data" / "status.json"
+SIGNALS_FILE = APP_DIR / "data" / "signals.json"
 STORAGE_KEY = "status.json"
+SIGNALS_KEY = "signals.json"
 INGEST_TOKEN = os.environ.get("INGEST_TOKEN", "")
+SIGNALS_MAX = 200
+SOURCE_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,31}$", re.IGNORECASE)
 EMPTY_STATUS = {
     "now_playing": None,
     "up_next": [],
@@ -69,6 +75,34 @@ def save_status(payload):
     DATA_FILE.write_text(text)
 
 
+def load_signals():
+    client = _storage_client()
+    if client is not None:
+        try:
+            return json.loads(client.download_as_text(SIGNALS_KEY))
+        except ObjectNotFoundError:
+            return []
+        except Exception as e:
+            app.logger.warning("object storage signals read failed: %s; falling back to file", e)
+    if SIGNALS_FILE.exists():
+        with SIGNALS_FILE.open() as f:
+            return json.load(f)
+    return []
+
+
+def save_signals(signals):
+    text = json.dumps(signals, indent=2)
+    client = _storage_client()
+    if client is not None:
+        try:
+            client.upload_from_text(SIGNALS_KEY, text)
+            return
+        except Exception as e:
+            app.logger.warning("object storage signals write failed: %s; falling back to file", e)
+    SIGNALS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    SIGNALS_FILE.write_text(text)
+
+
 @app.get("/")
 def index():
     return render_template("index.html")
@@ -103,6 +137,46 @@ def ingest_status():
         abort(400, "expected JSON object")
     save_status(payload)
     return jsonify({"ok": True, "backend": "object_storage" if _storage_client() else "file"})
+
+
+@app.get("/signals")
+def signals_page():
+    return render_template("signals.html")
+
+
+@app.get("/api/signals")
+def api_signals():
+    signals = load_signals()
+    since = request.args.get("since")
+    if since:
+        signals = [s for s in signals if s.get("received_at", "") > since]
+    resp = jsonify(signals)
+    resp.headers["Access-Control-Allow-Origin"] = "*"
+    resp.headers["Cache-Control"] = "no-store"
+    return resp
+
+
+@app.post("/signal/<source>")
+def receive_signal(source):
+    if not SOURCE_RE.match(source):
+        abort(400, "invalid source")
+    body = request.get_json(silent=True)
+    if body is None:
+        # Accept form-encoded or raw-text bodies too — wrap as {raw: ...}
+        raw = request.get_data(as_text=True)
+        body = {"raw": raw} if raw else {}
+    signal = {
+        "id": uuid.uuid4().hex,
+        "source": source.lower(),
+        "received_at": datetime.now(timezone.utc).isoformat(),
+        "body": body,
+    }
+    signals = load_signals()
+    signals.insert(0, signal)
+    if len(signals) > SIGNALS_MAX:
+        signals = signals[:SIGNALS_MAX]
+    save_signals(signals)
+    return jsonify({"ok": True, "id": signal["id"]})
 
 
 @app.get("/healthz")

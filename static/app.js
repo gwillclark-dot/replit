@@ -110,7 +110,45 @@ function renderLibrary(items) {
   });
 }
 
-async function refresh() {
+function summarizeSignal(sig) {
+  const b = sig.body || {};
+  if (typeof b === 'string') return b;
+  const pick = b.event || b.message || b.summary || b.text || b.title || b.raw;
+  if (pick) return String(pick);
+  try {
+    const compact = JSON.stringify(b);
+    return compact.length > 140 ? compact.slice(0, 139) + '…' : compact;
+  } catch { return '—'; }
+}
+
+function renderSignals(id, signals, { limit } = {}) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = '';
+  const items = (signals || []).slice(0, limit ?? signals?.length ?? 0);
+  if (!items.length) {
+    el.innerHTML = '<li class="empty"><span></span><span class="sub">silence on the wire — no transmissions yet</span><span></span></li>';
+    return;
+  }
+  items.forEach((sig, i) => {
+    const li = document.createElement('li');
+    li.className = 'signal-row';
+    const num = String(i + 1).padStart(2, '0');
+    const summary = esc(summarizeSignal(sig));
+    const source = esc(sig.source || 'unknown');
+    const when = sig.received_at ? fmtRelative(sig.received_at) : '';
+    li.innerHTML = `
+      <span class="num">${num}</span>
+      <span>
+        <div class="title"><span class="source-pill">${source}</span> ${summary}</div>
+      </span>
+      <span class="right">${when}</span>
+    `;
+    el.appendChild(li);
+  });
+}
+
+async function refreshStatus() {
   try {
     const res = await fetch('/api/status', { cache: 'no-store' });
     const data = await res.json();
@@ -122,6 +160,30 @@ async function refresh() {
   } catch (e) {
     setText('updated', 'offline');
   }
+}
+
+async function refreshSignals() {
+  const fullEl = document.getElementById('signals-feed');
+  const previewEl = document.getElementById('signals-preview');
+  if (!fullEl && !previewEl) return;
+  try {
+    const res = await fetch('/api/signals', { cache: 'no-store' });
+    const signals = await res.json();
+    renderSignals('signals-feed', signals);
+    renderSignals('signals-preview', signals, { limit: 3 });
+    if (fullEl && signals.length) {
+      const newest = signals[0].received_at;
+      setText('updated', `last signal ${fmtRelative(newest)}`);
+    } else if (fullEl) {
+      setText('updated', 'no transmissions yet');
+    }
+  } catch (e) {
+    if (fullEl) setText('updated', 'offline');
+  }
+}
+
+async function refresh() {
+  await Promise.all([refreshStatus(), refreshSignals()]);
 }
 
 refresh();

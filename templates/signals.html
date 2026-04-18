@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>transmissions — TRAX</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="signals-page">
+  <header class="topbar">
+    <div class="logo"><a href="/">TRAX<span class="cursor">_</span></a></div>
+    <div class="meta">
+      <span class="frequency-badge">FM 88.7</span>
+      <span class="dot live"></span>
+      <span id="updated">—</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="signals-hero">
+      <h1 class="signals-title">transmissions</h1>
+      <p class="signals-sub">incoming signals from the open internet</p>
+      <div class="signal-meter" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+    </section>
+
+    <section class="block">
+      <ol class="tracklist signal-list" id="signals-feed"></ol>
+    </section>
+
+    <section class="block">
+      <h2>send a signal</h2>
+      <p class="signals-sub">any HTTP client can push:</p>
+      <pre class="curl-snippet">curl -X POST https://trax-vis.replit.app/signal/&lt;source&gt; \
+  -H 'content-type: application/json' \
+  -d '{"event": "...", "message": "..."}'</pre>
+      <p class="signals-sub signals-hint">source: short slug (a–z, 0–9, _, -). Body: any JSON. No auth — traffic is bounded and public.</p>
+    </section>
+  </main>
+
+  <footer>
+    <span>auto-refresh 30s</span>
+    <span>·</span>
+    <a href="/api/signals">/api/signals</a>
+    <span>·</span>
+    <a href="/">back to TRAX</a>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
