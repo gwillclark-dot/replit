@@ -31,11 +31,6 @@ def index():
     return render_template("index.html")
 
 
-@app.get("/embed")
-def embed():
-    return render_template("embed.html")
-
-
 @app.get("/track/<key>")
 def track(key):
     status = load_status()

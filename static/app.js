@@ -126,16 +126,3 @@ async function refresh() {
 
 refresh();
 setInterval(refresh, REFRESH_MS);
-
-const copyBtn = document.getElementById('copy-embed');
-if (copyBtn) {
-  copyBtn.addEventListener('click', () => {
-    const code = document.getElementById('embed-code');
-    if (!code) return;
-    navigator.clipboard.writeText(code.textContent).then(() => {
-      const prev = copyBtn.textContent;
-      copyBtn.textContent = 'copied';
-      setTimeout(() => { copyBtn.textContent = prev; }, 1500);
-    });
-  });
-}
