@@ -30,8 +30,8 @@ function esc(s) {
 }
 
 function trackHref(item) {
-  const key = item.channel || item.project || item.name;
-  return key ? `/track/${encodeURIComponent(key)}` : '#';
+  const key = item && item.channel;
+  return key ? `/track/${encodeURIComponent(key)}` : null;
 }
 
 function renderNowPlaying(np) {
@@ -48,7 +48,7 @@ function renderNowPlaying(np) {
   setText('np-title', np.project || '—');
   const titleLink = document.getElementById('np-title');
   if (titleLink && titleLink.tagName === 'A') {
-    titleLink.href = trackHref(np);
+    titleLink.href = trackHref(np) || '#';
   }
   setText('np-artist', np.channel ? `#${np.channel}` : '—');
   setText('np-summary', np.summary || '—');
@@ -82,10 +82,13 @@ function renderList(id, items, opts = {}) {
       ? fmtRelative(item.played_at)
       : (item.status ? `<span class="status-pill ${item.status}">${item.status}</span>` : '');
     const href = trackHref(item);
+    const titleHtml = href
+      ? `<a class="title" href="${href}">${title}</a>`
+      : `<span class="title">${title}</span>`;
     li.innerHTML = `
       <span class="num">${num}</span>
       <span>
-        <a class="title" href="${href}">${title}</a>
+        ${titleHtml}
         ${sub ? `<div class="sub">${sub}</div>` : ''}
       </span>
       <span class="right">${right}</span>
@@ -99,9 +102,10 @@ function renderLibrary(items) {
   if (!el) return;
   el.innerHTML = '';
   (items || []).forEach(item => {
-    const card = document.createElement('a');
+    const href = trackHref(item);
+    const card = document.createElement(href ? 'a' : 'div');
     card.className = 'lib-card';
-    card.href = trackHref(item);
+    if (href) card.href = href;
     card.innerHTML = `
       <div class="name">${esc(item.project || item.name)}</div>
       <span class="status-pill ${item.status || ''}">${esc(item.status || '—')}</span>

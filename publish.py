@@ -121,25 +121,29 @@ def build_payload():
         m = lookup(head["project"])
         now_playing = {
             "project": head["project"],
-            "channel": m.get("key", head["project"]),
             "status": m.get("status", "active"),
             "summary": head["summary"],
             "duration_seconds": 0,
         }
+        if m.get("key"):
+            now_playing["channel"] = m["key"]
 
     # Recently played = next N
     recent = []
     for r in runs[1 : 1 + MAX_RECENT]:
         m = lookup(r["project"])
-        recent.append({
+        entry = {
             "project": r["project"],
             "summary": r["summary"],
             "played_at": r["played_at"],
             "status": m.get("status", "active"),
-        })
+        }
+        if m.get("key"):
+            entry["channel"] = m["key"]
+        recent.append(entry)
 
     # Up next = active/finishing projects in rotation, excluding now_playing
-    np_key = now_playing["channel"] if now_playing else None
+    np_key = now_playing.get("channel") if now_playing else None
     up_next = []
     for key, p in projects.items():
         if key == np_key:
@@ -157,7 +161,7 @@ def build_payload():
 
     # Library = everything not archived
     library = [
-        {"project": key, "status": p.get("status")}
+        {"project": key, "channel": key, "status": p.get("status")}
         for key, p in projects.items()
         if p.get("status") != "archived"
     ]
