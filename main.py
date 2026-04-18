@@ -31,9 +31,27 @@ def index():
     return render_template("index.html")
 
 
+@app.get("/embed")
+def embed():
+    return render_template("embed.html")
+
+
+@app.get("/track/<key>")
+def track(key):
+    status = load_status()
+    tracks = status.get("tracks") or {}
+    track_data = tracks.get(key)
+    if not track_data:
+        abort(404)
+    return render_template("track.html", track=track_data, key=key, updated_at=status.get("updated_at"))
+
+
 @app.get("/api/status")
 def api_status():
-    return jsonify(load_status())
+    resp = jsonify(load_status())
+    resp.headers["Access-Control-Allow-Origin"] = "*"
+    resp.headers["Cache-Control"] = "no-store"
+    return resp
 
 
 @app.post("/api/status")

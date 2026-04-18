@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TRAX — embed</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    body { padding: 0; background: transparent; }
+    .embed-card { margin: 0; border-radius: 8px; padding: 16px; gap: 16px; grid-template-columns: 80px 1fr; }
+    .embed-card .vinyl { width: 80px; height: 80px; }
+    .embed-card .hole { width: 18px; height: 18px; }
+    .embed-card .np-title { font-size: 16px; }
+    .embed-card .np-summary { font-size: 11px; min-height: 0; margin-bottom: 8px; }
+    .embed-card .np-label { font-size: 9px; margin-bottom: 4px; }
+    .embed-link {
+      display: block; text-align: center; font-size: 10px;
+      color: var(--dim); text-decoration: none; padding-top: 8px;
+      letter-spacing: 1px; text-transform: uppercase;
+    }
+    .embed-link:hover { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="now-playing embed-card" id="np">
+    <div class="vinyl"><div class="hole"></div></div>
+    <div class="np-info">
+      <div class="np-label">now playing on TRAX</div>
+      <div class="np-title" id="np-title">—</div>
+      <div class="np-artist" id="np-artist">—</div>
+      <div class="np-summary" id="np-summary">—</div>
+      <div class="progress"><div class="bar" id="np-bar"></div></div>
+      <div class="np-times"><span id="np-elapsed">0:00</span><span id="np-status" class="status-pill">—</span></div>
+    </div>
+  </div>
+  <a class="embed-link" href="/" target="_blank">tune in ↗</a>
+  <script src="/static/app.js"></script>
+</body>
+</html>

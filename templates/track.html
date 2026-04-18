@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ track.name }} — TRAX</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="track-page">
+  <header class="topbar">
+    <div class="logo"><a href="/">TRAX<span class="cursor">_</span></a></div>
+    <div class="meta">
+      <a href="/" class="back">← all tracks</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="track-hero">
+      <div class="vinyl"><div class="hole"></div></div>
+      <div class="np-info">
+        <div class="np-label">track</div>
+        <div class="np-title">{{ track.name }}</div>
+        <div class="np-artist">#{{ track.channel }}</div>
+        <div class="np-summary">
+          <span class="status-pill {{ track.status }}">{{ track.status }}</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>recent runs</h2>
+      {% if track.recent_runs %}
+      <ol class="tracklist">
+        {% for run in track.recent_runs %}
+        <li>
+          <span class="num">{{ "%02d"|format(loop.index) }}</span>
+          <span>
+            <div class="title">{{ run.played_at[:10] }}</div>
+            <div class="sub">{{ run.summary }}</div>
+          </span>
+          <span class="right"></span>
+        </li>
+        {% endfor %}
+      </ol>
+      {% else %}
+      <p class="empty-note">no runs logged yet</p>
+      {% endif %}
+    </section>
+
+    <section class="block">
+      <h2>b-side · next steps</h2>
+      {% if track.next_steps_preview %}
+      <ol class="tracklist">
+        {% for step in track.next_steps_preview %}
+        <li>
+          <span class="num">B{{ loop.index }}</span>
+          <span><div class="title">{{ step }}</div></span>
+          <span class="right"></span>
+        </li>
+        {% endfor %}
+      </ol>
+      {% else %}
+      <p class="empty-note">all tracked items shipped — no open next steps</p>
+      {% endif %}
+    </section>
+  </main>
+
+  <footer>
+    <span>updated {{ updated_at or '—' }}</span>
+    <span>·</span>
+    <a href="/">back to TRAX</a>
+  </footer>
+</body>
+</html>

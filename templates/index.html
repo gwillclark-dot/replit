@@ -20,7 +20,7 @@
       <div class="vinyl"><div class="hole"></div></div>
       <div class="np-info">
         <div class="np-label">now playing</div>
-        <div class="np-title" id="np-title">—</div>
+        <a class="np-title" id="np-title" href="#">—</a>
         <div class="np-artist" id="np-artist">—</div>
         <div class="np-summary" id="np-summary">awaiting first publish from the mac</div>
         <div class="progress"><div class="bar" id="np-bar"></div></div>
@@ -43,6 +43,17 @@
       <div class="library" id="library"></div>
     </section>
   </main>
+
+  <section class="block embed-block">
+    <h2>embed this</h2>
+    <p class="embed-desc">drop the now-playing card into any page:</p>
+    <div class="embed-snippet">
+      <code id="embed-code">&lt;iframe src="https://trax-vis.replit.app/embed" width="420" height="170" frameborder="0" style="border:0"&gt;&lt;/iframe&gt;</code>
+      <button id="copy-embed" type="button">copy</button>
+    </div>
+    <p class="embed-preview-label">preview:</p>
+    <iframe class="embed-preview" src="/embed" width="420" height="170" frameborder="0"></iframe>
+  </section>
 
   <footer>
     <span>auto-refresh 30s</span>

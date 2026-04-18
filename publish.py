@@ -28,6 +28,9 @@ TOKEN = os.environ.get("GEORGEFM_TOKEN", "")
 MAX_SUMMARY_CHARS = 200
 MAX_RECENT = 6
 MAX_UP_NEXT = 5
+MAX_TRACK_RUNS = 10
+MAX_NEXT_STEPS = 3
+MAX_NEXT_STEP_CHARS = 140
 
 # Drop entries that contain anything in this list (case-insensitive)
 SANITIZE_BLOCKLIST = [
@@ -55,6 +58,27 @@ def parse_state(text):
             "played_at": f"{date}T12:00:00Z",
         })
     return entries
+
+
+def read_next_steps(project_dir):
+    """Return the first N unchecked `- [ ]` items from <project_dir>/NEXT_STEPS.md."""
+    path = TRAX_DIR / project_dir / "NEXT_STEPS.md"
+    if not path.exists():
+        return []
+    items = []
+    for line in path.read_text().splitlines():
+        m = re.match(r"^\s*-\s*\[\s\]\s*(.+?)\s*$", line)
+        if not m:
+            continue
+        text = m.group(1)
+        if any(bad in text.lower() for bad in SANITIZE_BLOCKLIST):
+            continue
+        if len(text) > MAX_NEXT_STEP_CHARS:
+            text = text[: MAX_NEXT_STEP_CHARS - 1].rstrip() + "…"
+        items.append(text)
+        if len(items) >= MAX_NEXT_STEPS:
+            break
+    return items
 
 
 def build_payload():
@@ -138,11 +162,35 @@ def build_payload():
         if p.get("status") != "archived"
     ]
 
+    # Tracks = per-project rollup with all matching runs + NEXT_STEPS preview
+    tracks = {}
+    for key, p in projects.items():
+        if p.get("status") == "archived":
+            continue
+        project_runs = []
+        for r in runs:
+            m = lookup(r["project"])
+            if m.get("key") == key:
+                project_runs.append({
+                    "summary": r["summary"],
+                    "played_at": r["played_at"],
+                })
+                if len(project_runs) >= MAX_TRACK_RUNS:
+                    break
+        tracks[key] = {
+            "name": key.replace("_", " "),
+            "channel": key,
+            "status": p.get("status"),
+            "recent_runs": project_runs,
+            "next_steps_preview": read_next_steps(p.get("dir", key)),
+        }
+
     return {
         "now_playing": now_playing,
         "up_next": up_next,
         "recently_played": recent,
         "library": library,
+        "tracks": tracks,
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }
 
