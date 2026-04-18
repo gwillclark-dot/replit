@@ -199,6 +199,8 @@ a.lib-card:hover { border-color: var(--accent); }
   letter-spacing: 1.5px;
   text-transform: uppercase;
 }
+a.nav-badge { text-decoration: none; transition: background 0.15s; }
+a.nav-badge:hover { background: var(--accent); color: var(--bg); }
 
 .signals-page .signals-hero {
   background: var(--card);
