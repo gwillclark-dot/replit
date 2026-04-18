@@ -1,5 +1,6 @@
 entrypoint = "main.py"
 modules = ["python-3.11"]
+run = "python main.py"
 
 [nix]
 channel = "stable-23_11"
@@ -7,7 +8,3 @@ channel = "stable-23_11"
 [deployment]
 deploymentTarget = "cloudrun"
 run = ["sh", "-c", "gunicorn main:app --bind 0.0.0.0:$PORT --workers 2"]
-
-[[ports]]
-localPort = 8080
-externalPort = 80
