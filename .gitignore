@@ -1,7 +1,0 @@
-__pycache__/
-*.pyc
-.venv/
-.env
-data/status.json
-data/signals.json
-com.trax.replit-publisher.plist
